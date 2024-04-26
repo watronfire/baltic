@@ -853,7 +853,7 @@ class tree: ## tree class
         return ax
 
     def plotPoints(self,ax,x_attr=None,y_attr=None,target=None,size=None,colour=None,
-               zorder=None,outline=None,outline_size=None,outline_colour=None,**kwargs):
+               zorder=None,outline=None,outline_size=None,outline_colour=None,horizontal=False,**kwargs):
         if target==None: target=lambda k: k.is_leaf()
         if x_attr==None: x_attr=lambda k:k.x
         if y_attr==None: y_attr=lambda k:k.y
@@ -864,7 +864,9 @@ class tree: ## tree class
         if outline==None: outline=True
         if outline_size==None: outline_size=lambda k: size(k)*2 if callable(size) else size*2
         if outline_colour==None: outline_colour='k'
-
+        if horizontal:
+            x_attr, y_attr = y_attr, x_attr
+            
         xs=[]
         ys=[]
         colours=[]
@@ -894,7 +896,7 @@ class tree: ## tree class
 
     def plotTree(self,ax,connection_type=None,target=None,
              x_attr=None,y_attr=None,width=None,
-             colour=None,**kwargs):
+             colour=None,horizontal=False,**kwargs):
         if target==None: target=lambda k: True
         if x_attr==None: x_attr=lambda k: k.x
         if y_attr==None: y_attr=lambda k: k.y
@@ -918,18 +920,31 @@ class tree: ## tree class
             linewidths.append(width(k)) if callable(width) else linewidths.append(width)
 
             if connection_type=='baltic':
-                branches.append(((xp,y),(x,y)))
+                if horizontal:
+                    branches.append(((y,xp),(y,x)))
+                else: 
+                    branches.append(((xp,y),(x,y)))
+                    
                 if k.is_node():
                     yl,yr=y_attr(k.children[0]),y_attr(k.children[-1])
-                    branches.append(((x,yl),(x,yr)))
+                    if horizontal:
+                        branches.append(((yl,x),(yr,x)))
+                    else:
+                        branches.append(((x,yl),(x,yr)))
                     linewidths.append(linewidths[-1])
                     colours.append(colours[-1])
             elif connection_type=='elbow':
                 yp=y_attr(k.parent) if k.parent else y ## get parent x position
-                branches.append(((xp,yp),(xp,y),(x,y)))
+                if horizontal:
+                    branches.append(((yp,xp),(y,xp),(y,x)))
+                else:
+                    branches.append(((xp,yp),(xp,y),(x,y)))
             elif connection_type=='direct':
                 yp=y_attr(k.parent) ## get y position
-                branches.append(((xp,yp),(x,y)))
+                if horizontal:
+                    branches.append(((yp,xp),(y,x)))
+                else:
+                    branches.append(((xp,yp),(x,y)))
             else:
                 pass ## for now
 
